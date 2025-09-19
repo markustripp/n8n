@@ -8,14 +8,17 @@ import {
 	DataStoreColumn,
 	DataStoreProxyProvider,
 	DataStoreRows,
+	DeleteDataTableRowsOptions,
 	IDataStoreProjectAggregateService,
 	IDataStoreProjectService,
+	DataTableInsertRowsReturnType,
 	INode,
 	ListDataStoreOptions,
 	ListDataStoreRowsOptions,
 	MoveDataStoreColumnOptions,
 	UpdateDataStoreOptions,
-	UpsertDataStoreRowsOptions,
+	UpdateDataStoreRowOptions,
+	UpsertDataStoreRowOptions,
 	Workflow,
 } from 'n8n-workflow';
 
@@ -34,8 +37,8 @@ export class DataStoreProxyService implements DataStoreProxyProvider {
 	}
 
 	private validateRequest(node: INode) {
-		if (node.type !== 'n8n-nodes-base.dataTable') {
-			throw new Error('This proxy is only available for data table nodes');
+		if (node.type !== 'n8n-nodes-base.dataTable' && node.type !== 'n8n-nodes-base.dataTableTool') {
+			throw new Error('This proxy is only available for Data table nodes');
 		}
 	}
 
@@ -47,9 +50,10 @@ export class DataStoreProxyService implements DataStoreProxyProvider {
 	async getDataStoreAggregateProxy(
 		workflow: Workflow,
 		node: INode,
+		projectId?: string,
 	): Promise<IDataStoreProjectAggregateService> {
 		this.validateRequest(node);
-		const projectId = await this.getProjectId(workflow);
+		projectId = projectId ?? (await this.getProjectId(workflow));
 
 		return this.makeAggregateOperations(projectId);
 	}
@@ -58,9 +62,10 @@ export class DataStoreProxyService implements DataStoreProxyProvider {
 		workflow: Workflow,
 		node: INode,
 		dataStoreId: string,
+		projectId?: string,
 	): Promise<IDataStoreProjectService> {
 		this.validateRequest(node);
-		const projectId = await this.getProjectId(workflow);
+		projectId = projectId ?? (await this.getProjectId(workflow));
 
 		return this.makeDataStoreOperations(projectId, dataStoreId);
 	}
@@ -68,6 +73,10 @@ export class DataStoreProxyService implements DataStoreProxyProvider {
 	private makeAggregateOperations(projectId: string): IDataStoreProjectAggregateService {
 		const dataStoreService = this.dataStoreService;
 		return {
+			getProjectId() {
+				return projectId;
+			},
+
 			async getManyAndCount(options: ListDataStoreOptions = {}) {
 				const serviceOptions: DataStoreListOptions = {
 					...options,
@@ -124,12 +133,23 @@ export class DataStoreProxyService implements DataStoreProxyProvider {
 				return await dataStoreService.getManyRowsAndCount(dataStoreId, projectId, options);
 			},
 
-			async insertRows(rows: DataStoreRows) {
-				return await dataStoreService.insertRows(dataStoreId, projectId, rows);
+			async insertRows<T extends DataTableInsertRowsReturnType>(
+				rows: DataStoreRows,
+				returnType: T,
+			) {
+				return await dataStoreService.insertRows(dataStoreId, projectId, rows, returnType);
 			},
 
-			async upsertRows(options: UpsertDataStoreRowsOptions) {
-				return await dataStoreService.upsertRows(dataStoreId, projectId, options);
+			async updateRow(options: UpdateDataStoreRowOptions) {
+				return await dataStoreService.updateRow(dataStoreId, projectId, options, true);
+			},
+
+			async upsertRow(options: UpsertDataStoreRowOptions) {
+				return await dataStoreService.upsertRow(dataStoreId, projectId, options, true);
+			},
+
+			async deleteRows(options: DeleteDataTableRowsOptions) {
+				return await dataStoreService.deleteRows(dataStoreId, projectId, options, true);
 			},
 		};
 	}
