@@ -758,6 +758,7 @@
       "dist/nodes/Set/Set.node.js",
       "dist/nodes/Shopify/Shopify.node.js",
       "dist/nodes/Shopify/ShopifyTrigger.node.js",
+      "dist/nodes/ShopifyGraphqlBulk/ShopifyGraphqlBulk.node.js",
       "dist/nodes/ShopifyOrder/ShopifyOrder.node.js",
       "dist/nodes/Signl4/Signl4.node.js",
       "dist/nodes/Simulate/Simulate.node.js",
