@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useI18n } from '@n8n/i18n';
+import AiStarsIcon from '@/components/AiStarsIcon.vue';
 
+import { N8nButton, N8nTooltip } from '@n8n/design-system';
 const i18n = useI18n();
 
 const emit = defineEmits<{
@@ -44,7 +46,7 @@ const emit = defineEmits<{
 
 		svg {
 			// ensure enough contrast in both light and dark mode
-			color: var(--p-gray-200);
+			color: var(--p--color--gray-200);
 		}
 	}
 }

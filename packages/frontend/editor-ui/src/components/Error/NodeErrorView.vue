@@ -17,16 +17,22 @@ import type {
 	NodeError,
 	NodeOperationError,
 } from 'n8n-workflow';
+import { isCommunityPackageName } from 'n8n-workflow';
 import { sanitizeHtml } from '@/utils/htmlUtils';
 import { MAX_DISPLAY_DATA_SIZE, NEW_ASSISTANT_SESSION_MODAL, VIEWS } from '@/constants';
 import type { BaseTextKey } from '@n8n/i18n';
-import { useAssistantStore } from '@/stores/assistant.store';
-import type { ChatRequest } from '@/types/assistant.types';
-import InlineAskAssistantButton from '@n8n/design-system/components/InlineAskAssistantButton/InlineAskAssistantButton.vue';
+import { useChatPanelStore } from '@/features/assistant/chatPanel.store';
+import { useAssistantStore } from '@/features/assistant/assistant.store';
+import type { ChatRequest } from '@/features/assistant/assistant.types';
 import { useUIStore } from '@/stores/ui.store';
-import { isCommunityPackageName } from '@/utils/nodeTypesUtils';
-import { useAIAssistantHelpers } from '@/composables/useAIAssistantHelpers';
-import { N8nIconButton } from '@n8n/design-system';
+import { useAIAssistantHelpers } from '@/features/assistant/composables/useAIAssistantHelpers';
+import {
+	N8nInlineAskAssistantButton,
+	N8nButton,
+	N8nIcon,
+	N8nIconButton,
+	N8nTooltip,
+} from '@n8n/design-system';
 
 type Props = {
 	// TODO: .node can be undefined
@@ -48,6 +54,7 @@ const ndvStore = useNDVStore();
 const workflowsStore = useWorkflowsStore();
 const rootStore = useRootStore();
 const assistantStore = useAssistantStore();
+const chatPanelStore = useChatPanelStore();
 const uiStore = useUIStore();
 
 const workflowId = computed(() => workflowsStore.workflowId);
@@ -440,7 +447,7 @@ async function onAskAssistantClick() {
 		});
 		return;
 	}
-	await assistantStore.initErrorHelper(errorHelp);
+	await chatPanelStore.openWithErrorHelper(errorHelp);
 	assistantStore.trackUserOpenedAssistant({
 		source: 'error',
 		task: 'error',
@@ -465,7 +472,7 @@ async function onAskAssistantClick() {
 			></div>
 
 			<div v-if="isSubNodeError">
-				<n8n-button
+				<N8nButton
 					icon="arrow-right"
 					type="secondary"
 					:label="i18n.baseText('pushConnection.executionError.openNode')"
@@ -479,7 +486,7 @@ async function onAskAssistantClick() {
 				class="node-error-view__button"
 				data-test-id="node-error-view-ask-assistant-button"
 			>
-				<InlineAskAssistantButton :asked="assistantAlreadyAsked" @click="onAskAssistantClick" />
+				<N8nInlineAskAssistantButton :asked="assistantAlreadyAsked" @click="onAskAssistantClick" />
 			</div>
 		</div>
 
@@ -488,7 +495,7 @@ async function onAskAssistantClick() {
 				<p class="node-error-view__info-title">
 					{{ i18n.baseText('nodeErrorView.details.title') }}
 				</p>
-				<n8n-tooltip
+				<N8nTooltip
 					class="item"
 					:content="i18n.baseText('nodeErrorView.copyToClipboard.tooltip')"
 					placement="left"
@@ -503,7 +510,7 @@ async function onAskAssistantClick() {
 							@click="copyErrorDetails"
 						/>
 					</div>
-				</n8n-tooltip>
+				</N8nTooltip>
 			</div>
 
 			<div class="node-error-view__info-content">
@@ -517,7 +524,7 @@ async function onAskAssistantClick() {
 					class="node-error-view__details"
 				>
 					<summary class="node-error-view__details-summary">
-						<n8n-icon class="node-error-view__details-icon" icon="chevron-right" />
+						<N8nIcon class="node-error-view__details-icon" icon="chevron-right" />
 						{{
 							i18n.baseText('nodeErrorView.details.from', {
 								interpolate: { node: `${nodeDefaultName}` },
@@ -572,7 +579,7 @@ async function onAskAssistantClick() {
 
 				<details class="node-error-view__details">
 					<summary class="node-error-view__details-summary">
-						<n8n-icon class="node-error-view__details-icon" icon="chevron-right" />
+						<N8nIcon class="node-error-view__details-icon" icon="chevron-right" />
 						{{ i18n.baseText('nodeErrorView.details.info') }}
 					</summary>
 					<div class="node-error-view__details-content">
@@ -750,6 +757,7 @@ async function onAskAssistantClick() {
 		margin-bottom: var(--spacing-xs);
 		margin-top: var(--spacing-xs);
 		flex-direction: row-reverse;
+
 		span {
 			margin-right: var(--spacing-5xs);
 			margin-left: var(--spacing-5xs);
@@ -772,6 +780,7 @@ async function onAskAssistantClick() {
 			width: 100%;
 			overflow: auto;
 			background: var(--color-background-light);
+
 			code {
 				font-size: var(--font-size-s);
 			}
@@ -793,6 +802,7 @@ async function onAskAssistantClick() {
 		align-items: center;
 		justify-content: center;
 		cursor: pointer;
+
 		&:hover {
 			color: var(--color-primary);
 		}
