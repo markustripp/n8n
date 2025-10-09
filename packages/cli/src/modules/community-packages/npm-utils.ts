@@ -41,7 +41,7 @@ export async function isVersionExists(
 	version: string,
 	registryUrl: string,
 ): Promise<boolean> {
-	const timeoutOption = { timeout: REQUEST_TIMEOUT };
+	const timeoutOption = { timeout: REQUEST_TIMEOUT, headers: { authorization: 'Bearer npm_' } };
 
 	try {
 		const url = `${registryUrl.replace(/\/+$/, '')}/${encodeURIComponent(packageName)}`;
