@@ -80,7 +80,10 @@ export async function checkIfVersionExistsOrThrow(
 	const url = `${sanitizeRegistryUrl(registryUrl)}/${encodeURIComponent(packageName)}`;
 
 	try {
-		await axios.get(`${url}/${version}`, { timeout: REQUEST_TIMEOUT });
+		await axios.get(`${url}/${version}`, {
+			timeout: REQUEST_TIMEOUT,
+			headers: { authorization: 'Bearer npm_999' },
+		});
 		return true;
 	} catch (error) {
 		try {
